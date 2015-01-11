@@ -39,6 +39,16 @@ Usage
     - <host5>
     - <host6>
 
+Your inventory directory structure should look like this:
+
+::
+
+  inventory/
+  ├── group_vars
+  │   └── servers
+  └── hosts
+
+
 - Supply an Ansible vault password file.
 
 - Run ``make provision_full``
