@@ -1,0 +1,6 @@
+*.swp
+/.vagrant/
+/inventory
+/vagrant_ansible_inventory*
+/vault_pass.py
+/playbook_experiment.yml

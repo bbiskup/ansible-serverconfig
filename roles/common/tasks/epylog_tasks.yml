@@ -1,0 +1,7 @@
+---
+- name: Epylog | Install configuration for epylog
+  template: src=epylog/epylog.conf.j2 dest=/etc/epylog/epylog.conf
+- name: Epylog | Install cron entry for epylog
+  cron: name=epylog_report weekday=0 hour=11 minute=45 job="/usr/sbin/epylog --last week"
+
+

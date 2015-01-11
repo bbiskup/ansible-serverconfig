@@ -1,0 +1,7 @@
+---
+- hosts: 
+    - godev_machines
+  sudo: yes
+  roles:
+    - godev
+

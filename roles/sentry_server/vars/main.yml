@@ -1,0 +1,13 @@
+
+# System/DB user
+sentry_user: sentry
+
+sentry_home: "/home/{{sentry_user}}"
+venv_dir: "{{sentry_home}}/venv"
+venv_bin: "{{venv_dir}}/bin"
+sentry_exe: "{{venv_bin}}/sentry"
+db_name: "{{sentry_user}}"
+sentry_port: 9000
+sentry_conf_dir: "{{sentry_home}}/.sentry"
+sentry_conf_file: "{{sentry_conf_dir}}/sentry.conf.py"
+sentry_admin_mail: bernhard.biskup@googlemail.com

@@ -1,0 +1,151 @@
+---
+- include_vars: secrets.yml
+
+# TODO: sentry command als eigene task/Modul?
+# TODO: split tasks; remove redundant sudos
+# TODO duply-job for autopostgresqlbackup?
+# TODO generate unique SENTRY_KEY 
+# TODO: sentry_secret_key per installation
+# TODO: database migration and repair always report "changed"
+# TODO: sourcing of venv as variable?
+# TODO: trigger sentry restart after migration or somewhere else?
+# TODO: changed-state bei Passwortänderung erkennen
+- name: Create sentry user
+  user: >
+      name={{sentry_user}}
+      comment="User for Sentry logging installation (Ansible)"
+      home={{sentry_home}}
+      state=present
+
+- name: Install prerequisite APT packages
+  apt: name={{item}}
+  with_items:
+    - libxml2-dev
+    - libxslt1-dev
+    - python-dev
+    - python-psycopg2
+    - language-pack-de-base
+    - postgresql-9.3
+    - postgresql-server-dev-9.3
+    - pgtop
+    - autopostgresqlbackup
+    - supervisor
+    - redis-server
+    - redis-tools
+
+- name: Ensure Postgres cluster exists
+  shell: >
+      LANGUAGE="de_DE.utf-8" LC_ALL="de_DE.UTF-8" 
+      sudo pg_createcluster 9.3 main --start
+  register: create_result
+  changed_when: "'Creating new cluster' in create_result.stdout"
+  failed_when: "create_result.rc != 0 and not 'cluster configuration already exists' in create_result.stderr"
+
+- name: Ensure PostgreSQL is running
+  service: name=postgresql state=running
+
+- name: Setup up cron job for database backup
+  cron: >
+      name="autopgsqlbackup"
+      hour="2"
+      minute="0"
+      job="/usr/sbin/autopostgresqlbackup"
+
+- name: Create sentry PostgreSQL user
+  postgresql_user: >
+      name="{{sentry_user}}"
+      db="postgres"
+  sudo: yes
+  sudo_user: postgres
+
+- name: Create sentry PostgreSQL DB
+  postgresql_db: >
+      name=sentry 
+      encoding='UTF-8'
+      lc_collate='de_DE.UTF-8'
+      lc_ctype='de_DE.UTF-8'
+      template='template0'
+      owner="{{sentry_user}}"
+  sudo: yes
+  sudo_user: postgres
+
+- name: Install sentry and additional Python packages
+  pip: >
+      virtualenv={{venv_dir}}
+      name={{item}}
+  with_items:
+      - sentry[postgres]
+      - eventlet  # for internal server
+      - docutils
+      - lxml
+      - python-daemon  # for internal server
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+  notify:
+    - restart sentry
+
+- name: Create sentry config dir
+  file: path="{{sentry_conf_dir}}" state=directory
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+
+- name: Set up sentry config
+  template: >
+      src=sentry.conf.py.j2 
+      dest={{sentry_conf_file}}
+      backup=yes
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+
+- name: Sentry schema migration
+  shell: . {{venv_dir}}/bin/activate && sentry upgrade
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+
+- name: Create sentry superuser
+  shell: >
+      . {{venv_dir}}/bin/activate &&
+      {{sentry_exe}} createsuperuser --username={{sentry_user}}
+      --email={{sentry_admin_mail}} --noinput
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+  register: create_result
+  changed_when: "'Superuser created successfully.' in create_result.stdout"
+  failed_when: >
+      not 'Superuser created successfully.' in create_result.stdout 
+      and not 'IntegrityError: duplicate key' in create_result.stderr
+
+- name: Install script for settings sentry superuser password
+  template: >
+      src=set_superuser_password.py.j2
+      dest={{sentry_home}}/set_superuser_password.py
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+  tags:
+   - focus
+
+- name: Set superuser password
+  shell: >
+    chdir="{{sentry_home}}"
+      . {{venv_dir}}/bin/activate &&
+      python set_superuser_password.py {{sentry_password}}
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+  tags:
+   - focus
+
+- name: Run sentry repair script
+  shell: . {{venv_dir}}/bin/activate &&
+         {{sentry_exe}} repair
+  sudo: yes
+  sudo_user: "{{sentry_user}}"
+
+- name: Install sentry supervisor jobs
+  template: src=supervisor/sentry.conf.j2 
+            dest=/etc/supervisor/conf.d/sentry.conf
+  notify:
+    - restart supervisor
+  tags:
+   - focus
+
+     

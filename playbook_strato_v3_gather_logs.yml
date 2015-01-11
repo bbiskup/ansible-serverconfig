@@ -1,0 +1,14 @@
+---
+- hosts: strato_v3
+  sudo: yes
+
+  tasks:
+    - name: Fetch all logs
+      fetch: src=/var/log/{{item}} dest=logs/ validate_md5=yes
+      with_items:
+          - syslog
+          - auth.log
+          - messages
+          - boot.log
+          - mail.log
+

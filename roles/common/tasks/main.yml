@@ -1,0 +1,93 @@
+---
+- name: Diagnosis | Check OS
+  debug: msg='Only Ubuntu >= {{target_major_release}} is supported' fail=yes
+  when: not ansible_lsb.major_release == "{{target_major_release}}"
+  tags:
+    - diagnosis
+
+  # sollte in aktuellster Version nicht mehr nötig sein
+
+  #- name: Remove temporary ansible directory
+  #file: path={{ansible_tmpdir}} state=absent
+- name: Diagnosis | System time
+  debug: >
+      msg="Current time on {{ansible_hostname}}:
+      {{ansible_date_time.time}} {{ansible_date_time.date}}"
+  #"
+
+- name: Prepare | Install APT prerequisites
+  apt: name={{item}} state=installed force=yes
+  with_items:
+    - aptitude
+    - python-pycurl
+
+- name: Prepare | Ensure universe APT repository is available
+  apt_repository: repo="deb http://de.archive.ubuntu.com/ubuntu/ trusty universe" state=present
+
+
+- name: Prepare | Create temporary ansible directory
+  file: path={{ansible_tmpdir}} state=directory
+
+- name: Prepare | Ensure python-apt is installed
+  command: apt-get install python-apt -y -q creates=/usr/share/doc/python-apt
+
+- name: Package management | APT update & upgrade
+  apt: update_cache=yes upgrade=full
+  when: refresh_apt
+
+- name: Package management | Install basic packages
+  apt: name={{item}} state=installed
+  with_items:
+   - facter
+   - htop
+   - wget
+   - curl
+   - vim
+   - tmux
+   - ntp
+   - nethogs
+     # - denyhosts  # not available any longer in Ubuntu 14.04
+   - fail2ban
+   - vnstat
+   - postfix
+   - tree
+   - iotop
+   - nmap
+   - sshfs
+   - duply
+   - rsync
+   - rdiff-backup
+   - git
+   - mercurial
+   - epylog
+   - heirloom-mailx  # otherwise no /usr/bin/mail in Ubuntu 14.04
+   - clamav-freshclam
+   - python-virtualenv
+
+- name: Set timezone
+  template: src=timezone/timezone.conf.j2 dest=/etc/timezone  
+
+- name: Add NTP servers
+  lineinfile: dest=/etc/ntp.conf line='server {{item}}'
+  #'
+  with_items:
+   - 0.de.pool.ntp.org
+   - 1.de.pool.ntp.org
+   - 2.de.pool.ntp.org
+   - 3.de.pool.ntp.org
+   - 4.de.pool.ntp.org
+   - ntp1.t-online.de
+   - ntps1-0.cs.tu-berlin.de
+   - ntp0.freenet.de, ntp1.freenet.de
+  notify:
+    - restart ntp
+
+- include: denyhosts_tasks.yml
+
+- include: duply_tasks.yml
+    #duply_conf_dir: "{{duply_conf_dir}}"
+    #duply_confs: "{{duply_confs}}"
+
+- include: epylog_tasks.yml
+
+- include: antivirus_tasks.yml

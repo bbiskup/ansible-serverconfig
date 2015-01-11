@@ -1,0 +1,11 @@
+---
+- name: Antivirus | Install cron entry for freshclam
+  cron: name=freshclam_scan hour=0 minute=0 job="/usr/bin/freshclam"
+
+- name: Antivirus | Install cron entry for clamscan
+  cron: >
+      name=clamscan 
+      weekday=0 
+      hour=1 
+      minute=0 
+      job="/usr/bin/clamscan -ri /|/usr/bin/mail -s clamscan {{admin_mail}}"

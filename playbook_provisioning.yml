@@ -1,0 +1,29 @@
+---
+#
+# Tested with Ubuntu 14.04
+#
+# Prerequisites:
+# - Ubuntu installation
+# - create regular user (bb)
+# - add entry in /etc/sudoers:
+#   bb      ALL=(ALL:ALL) NOPASSWD: ALL
+# - Configure /etc/ssh/sshd_config:
+#   Port -> non-standard
+#   PasswordAuthentication no
+#   PermitRootLogin no
+#
+#
+# TODO: iptables, CrashPlan oder so, munin
+# TODO duply backup: crontab fuer purge
+# TODO duply backup: Full-/Incremental Einstellungen
+# TODO motd
+# TODO: sentry
+- hosts: all
+  sudo: yes
+  roles:
+    - common
+    - sentry_server
+    - godev
+  tags:
+    - focus
+

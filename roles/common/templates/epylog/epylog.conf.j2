@@ -1,0 +1,48 @@
+## {{ansible_managed}}
+##
+# Main Epylog configuration file. See epylog.conf(5) for more info.
+#
+[main]
+cfgdir = /etc/epylog
+tmpdir = /var/tmp
+vardir = /var/lib/epylog
+
+[report]
+title = @@HOSTNAME@@ system events: @@LOCALTIME@@
+template = /etc/epylog/report_template.html
+include_unparsed = yes
+publishers = mail
+
+[mail]
+method = mail
+smtpserv = /usr/sbin/sendmail -t
+mailto = {{admin_mail}}
+format = html
+lynx = /usr/bin/lynx
+include_rawlogs = no
+rawlogs_limit = 200
+##
+# GPG encryption requires pygpgme installed
+#
+gpg_encrypt = no
+# If gpg_keyringdir is omitted, we'll use the default ~/.gnupg for the
+# user running epylog (/root/.gnupg, usually).
+#gpg_keyringdir = /etc/epylog/gpg/
+# List key ids, can be emails or fingerprints. If omitted, we'll
+# encrypt to all keys found in the pubring.
+#gpg_recipients = admin1@example.com, admin2@example.com
+# List key ids that we should use to sign the report.
+# If omitted, the report will not be signed, only encrypted.
+#gpg_signers = epylog@logserv.example.com
+
+[file]
+method = file
+path = /var/www/html/epylog
+dirmask = %Y-%b-%d_%a
+filemask = %H%M
+save_rawlogs = no
+expire_in = 7
+notify = {{admin_mail}}
+smtpserv = /usr/sbin/sendmail -t
+pubroot = http://localhost/epylog
+

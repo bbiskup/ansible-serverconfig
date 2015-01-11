@@ -1,0 +1,21 @@
+# {{ansible_managed}}
+#
+
+[group:sentry]
+programs=sentry-web,sentry-worker
+
+[program:sentry-web]
+user = {{sentry_user}}
+directory={{sentry_home}}
+command={{sentry_exe}} start
+autostart=true
+autorestart=true
+redirect_stderr=true
+
+[program:sentry-worker]
+user = {{sentry_user}}
+directory={{sentry_home}}
+command={{sentry_exe}} celery worker -B
+autostart=true
+autorestart=true
+redirect_stderr=true

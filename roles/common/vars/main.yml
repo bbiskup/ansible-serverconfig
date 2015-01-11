@@ -1,0 +1,13 @@
+---
+refresh_apt: true
+target_major_release: 14
+admin_mail: bernhard.biskup@googlemail.com
+ansible_tmpdir: /tmp/ansible_tmp
+denyhosts_deb: denyhosts_2.6-10_all.deb
+duply_target_dir: /duply-backup
+duply_conf_dir: /root/.duply
+duply_confs:
+    home:
+        path: /home
+    etc:
+        path: /etc

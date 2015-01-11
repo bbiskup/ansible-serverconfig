@@ -1,0 +1,12 @@
+---
+
+# Google Go Development environment
+# bb
+
+- name: Install Go packages
+  apt: name={{item}}
+  with_items:
+    - golang-go
+    - golang-doc
+    - golang-src
+    - golang-go.tools

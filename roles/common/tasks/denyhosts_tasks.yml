@@ -1,0 +1,21 @@
+---
+- name: Denyhosts | Copy legacy denyhosts deb
+  copy: src=debs/{{denyhosts_deb}} dest={{ansible_tmpdir}}
+
+- name: Denyhosts | install legacy denyhosts deb
+  shell: dpkg --skip-same-version -i  {{denyhosts_deb}} chdir={{ansible_tmpdir}}
+  register: dpkg_result
+  # see http://stackoverflow.com/a/19127494
+  # avoid "changed" state
+  changed_when: "dpkg_result.stdout.startswith('Selecting')"
+
+- name: Denyhosts | Install denyhosts configuration
+  template: src=denyhosts/denyhosts.conf.j2 dest=/etc/
+  notify:
+  - restart denyhosts
+
+- name: Denyhosts | Add trusted hosts to list of allowed hosts in denyhosts
+  lineinfile: dest=/var/lib/denyhosts/allowed-hosts create=yes line={{item}}
+  with_items: trusted_hosts
+  notify:
+    - restart denyhosts

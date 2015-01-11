@@ -1,0 +1,12 @@
+---
+- name: Duply | Create duply home config subdirs
+  file: path={{duply_conf_dir}}/{{item.key}} state=directory mode=700
+  with_dict: duply_confs
+
+- name: Duply | Install duply backup configurations
+  template: src=duply/conf.j2 dest={{duply_conf_dir}}/{{item.key}}/conf mode=700
+  with_dict: duply_confs
+
+- name: Duply | Install cron entries for duply backup
+  cron: name=duply_{{item.key}}_backup  hour=12 minute=0 job="/usr/bin/duply {{item.key}} backup"
+  with_dict: duply_confs
