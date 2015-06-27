@@ -1,19 +1,22 @@
 ---
-- name: Diagnosis | Check OS
-  debug: msg='Only Ubuntu >= {{target_major_release}} is supported' fail=yes
-  when: not ansible_lsb.major_release == "{{target_major_release}}"
-  tags:
-    - diagnosis
-
-  # sollte in aktuellster Version nicht mehr nötig sein
-
-  #- name: Remove temporary ansible directory
-  #file: path={{ansible_tmpdir}} state=absent
+#- name: Diagnosis | Check OS
+#  debug: msg='Only Ubuntu >= {{target_major_release}} is supported' fail=yes
+#  when: not ansible_lsb.major_release == "{{target_major_release}}"
+#  tags:
+#    - diagnosis
+#
+#  # sollte in aktuellster Version nicht mehr nötig sein
+#
+#  #- name: Remove temporary ansible directory
+#  #file: path={{ansible_tmpdir}} state=absent
 - name: Diagnosis | System time
   debug: >
       msg="Current time on {{ansible_hostname}}:
       {{ansible_date_time.time}} {{ansible_date_time.date}}"
   #"
+
+- name: Prepare | Ensure python-apt is installed
+  command: apt-get install python-apt -y -q creates=/usr/share/doc/python-apt
 
 - name: Prepare | Install APT prerequisites
   apt: name={{item}} state=installed force=yes
@@ -27,9 +30,6 @@
 
 - name: Prepare | Create temporary ansible directory
   file: path={{ansible_tmpdir}} state=directory
-
-- name: Prepare | Ensure python-apt is installed
-  command: apt-get install python-apt -y -q creates=/usr/share/doc/python-apt
 
 - name: Package management | APT update & upgrade
   apt: update_cache=yes upgrade=full
