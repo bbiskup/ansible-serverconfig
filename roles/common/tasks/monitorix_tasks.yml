@@ -1,0 +1,18 @@
+- name: Repo | Add custom monitorix repository
+  apt_repository: repo='deb http://apt.izzysoft.de/ubuntu generic universe' state=present
+
+- name: Repo | Add key for custom monitorix repository
+  apt_key: url=http://apt.izzysoft.de/izzysoft.asc state=present
+
+- name: Package management | Install monitorix package
+  apt: name={{item}} state=installed
+  args:
+    dpkg_options: force-bad-verify
+  with_items:
+   - monitorix
+
+- name: Monitorix configuration | Install monitorix configuration file
+  template: src=monitorix/monitorix.conf.j2 dest=/etc/monitorix/monitorix.conf
+  notify:
+  - restart monitorix
+  

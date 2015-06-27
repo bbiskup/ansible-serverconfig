@@ -32,6 +32,7 @@
     - supervisor
     - redis-server
     - redis-tools
+    - libffi-dev
 
 - name: Ensure Postgres cluster exists
   shell: >
@@ -79,6 +80,7 @@
       - docutils
       - lxml
       - python-daemon  # for internal server
+      - cryptography
   sudo: yes
   sudo_user: "{{sentry_user}}"
   notify:

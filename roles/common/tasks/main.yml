@@ -91,3 +91,5 @@
 - include: epylog_tasks.yml
 
 - include: antivirus_tasks.yml
+
+- include: monitorix_tasks.yml
