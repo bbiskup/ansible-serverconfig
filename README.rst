@@ -57,4 +57,7 @@ Testing
 -------
 
 `Vagrant <http://www.vagrantup.com>`_ may be used to test provisioning.
-The hosts configured in ``Vagrantfile`` must match the inventory.
+
+- The hosts configured in ``Vagrantfile`` must match the inventory.
+- An Ubuntu image (>= 12.04) needs to be installed an referenced by
+  the ``config.vm.box`` setting in ``Vagrantfile``.
