@@ -5,7 +5,9 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "u14.04_64_1"
+  # config.vm.box = "u14.04_64_1"
+  # with Travis:
+  config.vm.box = "u12.04_64_1"
 
   config.vm.provision "ansible" do |ansible|
     ansible.sudo = true
