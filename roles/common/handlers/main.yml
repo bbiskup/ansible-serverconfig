@@ -3,3 +3,5 @@
   service: name=denyhosts state=restarted
 - name: restart ntp
   service: name=ntp state=restarted
+- name: restart monitorix
+  service: name=monitorix state=restarted
