@@ -51,6 +51,11 @@
    - vnstat
    - postfix
    - tree
+   - iptraf
+   - bmon
+   - nmon
+   - nload
+   - iftop
    - iotop
    - nmap
    - sshfs
