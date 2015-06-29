@@ -22,8 +22,14 @@
   sudo: yes
   roles:
     - common
-    - sentry_server
-    - godev
-  tags:
-    - focus
 
+- hosts: sentry_servers
+  sudo: yes
+  roles:
+    - sentry_server
+
+
+- hosts: godev_machines
+  sudo: yes
+  roles:
+    - godev
